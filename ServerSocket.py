@@ -1,17 +1,22 @@
 __author__ = 'SKings'
 
 import socket
+from threading import Thread,Condition
 
 class ServerSocket:
 
     ServersCount = 0
-    def __init__(self, ip, port, name=None):
+    def __init__(self, ip, port,name=None):
         self.name = name
         self.ip = ip
         self.port = port
         ServerSocket.ServersCount += 1
+        self.serverThread = Thread(target=self.startServerReal,args=[])
 
     def startServer(self):
+        self.serverThread.start()
+
+    def startServerReal(self):
         self.live = True
         self.s = socket.socket()
         self.s.bind((self.ip , self.port))
@@ -37,12 +42,13 @@ class ServerSocket:
                 finally:
                     #close connection after get datas
                     connection.close();
-            except:
-                print("connection error")
+            except Exception as e:
+                print("connection closed or loss")
 
     def kill_server(self):
-        self.live =False
         self.s.close()
+        self.live =False
+
 
     def ip_port(self,ip=None,port=None):
         if ip is not None:
